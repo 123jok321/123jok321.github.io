@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tema 8</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+        integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+        crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+        integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+        crossorigin=""></script>
+    <style type="text/css">
+        #mapa {height: 500px;
+            border-color: black;
+            width: 1800px;} 
+        .info {
+            padding: 6px 8px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: olivedrab;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+}
+    </style>
+
+    <script type="text/javascript" src="Municipios.js"></script>
+
+</head>
+<body>
+    <h1>Holaa</h1>
+    <div id="mapa"></div>
+    <script type="text/javascript">
+    
+    var miMapa = L.map('mapa', {
+                center: [43.076296, -2.602532],
+                zoom: 8                
+        });
+    
+    var Stamen_Toner = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}', {
+	    attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	    subdomains: 'abcd',
+	    minZoom: 0,
+	    maxZoom: 20,
+	     ext: 'png'
+    }).addTo(miMapa);
+
+    function estile(d) {
+        return  d > 300000 ? '#184E77':
+                d > 200000 ? '#1E6091':
+                d > 100000 ? '#1A759F':
+                d > 50000  ? '#168AAD':
+                d > 20000  ? '#34A0A4':
+                d > 10000  ? '#52B69A':
+                d > 5000   ? '#76C893':
+                d > 1000   ? '#99D98C':
+                d > 500    ? '#B5E48C':
+                '#D9ED92'
+    };
+
+    var estilo = function (feature) {
+        return {fillColor: estile(parseFloat(feature.properties.Field4)),
+                color: 'white',
+                fillOpacity: 1,
+                weight: 1};
+    };
+
+    function resaltar(e) {
+        var layer = e.target
+        layer.setStyle({
+            weight: 5,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        }); 
+        layer.bringToFront();
+        info.update(layer.feature.properties)
+    }
+
+    function resetHighlight(e) {
+        miCapa.resetStyle(e.target);
+        info.update();
+    }
+
+    function onEachFeature(feature, layer) {
+        layer.on({
+            mouseover: resaltar,
+            mouseout: resetHighlight
+        });
+    }
+
+    var miCapa = L.geoJSON(municipios, {style:estilo, onEachFeature: onEachFeature}).bindPopup(function (feature) {
+    return feature.feature.properties.Field1;
+        }).addTo(miMapa);
+
+    var info = L.control();
+
+    info.onAdd = function (miMapa) {
+        this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+        this.update();
+        return this._div;
+    };
+
+    // method that we will use to update the control based on feature properties passed
+    info.update = function (props) {
+        this._div.innerHTML = '<h4>Población del Municipio - 2021</h4>' +  (props ?
+        '<b>' + props.Field1 + '</b><br />' + props.Field4 + 'personas'
+        : 'Selecciona un municipio');
+    };
+
+    info.addTo(miMapa);
+
+
+    </script>
+    
+    
+</body>
+</html>
